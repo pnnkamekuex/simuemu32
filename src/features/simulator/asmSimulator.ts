@@ -5,8 +5,44 @@ import type {
   SimulationLogEntry,
   SimulationResult,
 } from '../../types';
+import { analyzeAssembly } from './asmParser';
 
 const REGISTER_NAMES: RegisterName[] = ['EAX', 'EBX', 'ECX', 'EDX', 'ESI', 'EDI', 'EBP', 'ESP'];
+
+const stripPrefix = (value: string, prefix: string) =>
+  value.startsWith(prefix) ? value.slice(prefix.length) : value;
+
+const SIZE_SUFFIXES = new Set(['b', 'w', 'l']);
+
+const DIRECTIVES = new Set([
+  '.text',
+  '.data',
+  '.bss',
+  '.rodata',
+  '.byte',
+  '.word',
+  '.int',
+  '.quad',
+  '.ascii',
+  '.asciiz',
+  '.string',
+  '.space',
+  '.global',
+]);
+
+const normalizeMnemonic = (mnemonic: string) => {
+  const lowered = mnemonic.toLowerCase();
+  if (lowered.startsWith('.')) {
+    return lowered;
+  }
+  if (lowered.length > 1) {
+    const suffix = lowered[lowered.length - 1];
+    if (SIZE_SUFFIXES.has(suffix)) {
+      return lowered.slice(0, -1);
+    }
+  }
+  return lowered;
+};
 
 const createInitialState = (): CpuState => ({
   registers: REGISTER_NAMES.reduce(
@@ -25,13 +61,14 @@ const createInitialState = (): CpuState => ({
 
 type Operand =
   | { type: 'register'; register: RegisterName }
-  | { type: 'immediate'; value: number };
+  | { type: 'immediate'; value: number }
+  | { type: 'memory'; reference: string };
 
 const isRegister = (value: string): value is RegisterName =>
   REGISTER_NAMES.includes(value.toUpperCase() as RegisterName);
 
 const parseImmediate = (value: string): number | null => {
-  const trimmed = value.trim().toLowerCase();
+  const trimmed = stripPrefix(value.trim(), '$').toLowerCase();
   if (trimmed.startsWith('0x')) {
     const parsed = Number.parseInt(trimmed.slice(2), 16);
     return Number.isNaN(parsed) ? null : parsed;
@@ -48,13 +85,22 @@ const parseImmediate = (value: string): number | null => {
 
 const parseOperand = (rawOperand: string): Operand | null => {
   const cleaned = rawOperand.trim();
-  if (isRegister(cleaned.toUpperCase())) {
-    return { type: 'register', register: cleaned.toUpperCase() as RegisterName };
+  const registerCandidate = stripPrefix(cleaned, '%');
+  if (isRegister(registerCandidate.toUpperCase())) {
+    return { type: 'register', register: registerCandidate.toUpperCase() as RegisterName };
   }
 
   const immediate = parseImmediate(cleaned);
   if (immediate !== null) {
     return { type: 'immediate', value: immediate };
+  }
+
+  if (cleaned.startsWith('(') || cleaned.includes('(') || cleaned.includes(')')) {
+    return { type: 'memory', reference: cleaned };
+  }
+
+  if (/^[A-Za-z_][\w]*(\+|-)?/.test(cleaned)) {
+    return { type: 'memory', reference: cleaned };
   }
 
   return null;
@@ -70,11 +116,14 @@ const setRegister = (state: CpuState, register: RegisterName, value: number) => 
   state.registers[register] = value;
 };
 
-const getOperandValue = (state: CpuState, operand: Operand): number => {
+const getOperandValue = (state: CpuState, operand: Operand): number | null => {
   if (operand.type === 'register') {
     return state.registers[operand.register];
   }
-  return operand.value;
+  if (operand.type === 'immediate') {
+    return operand.value;
+  }
+  return null;
 };
 
 const updateArithmeticFlags = (state: CpuState, result: number) => {
@@ -88,6 +137,18 @@ export const simulateProgram = (code: string): SimulationResult => {
   const state = createInitialState();
   const diagnostics: Diagnostic[] = [];
   const log: SimulationLogEntry[] = [];
+
+  const analysis = analyzeAssembly(code);
+
+  analysis.lines.forEach((line) => {
+    line.errors.forEach((message) => {
+      diagnostics.push({
+        line: line.line,
+        message,
+        severity: 'error',
+      });
+    });
+  });
 
   const lines = code.split(/\r?\n/);
 
@@ -112,8 +173,18 @@ export const simulateProgram = (code: string): SimulationResult => {
     }
 
     const [mnemonicRaw, operandsRaw = ''] = instructionBody.split(/\s+/, 2);
-    const mnemonic = mnemonicRaw.toLowerCase();
-    const operands = operandsRaw.split(',').map((operand) => operand.trim()).filter(Boolean);
+    const loweredMnemonic = mnemonicRaw.toLowerCase();
+    if (DIRECTIVES.has(loweredMnemonic)) {
+      return;
+    }
+    const mnemonic = normalizeMnemonic(mnemonicRaw);
+    if (DIRECTIVES.has(mnemonic)) {
+      return;
+    }
+    const operands = operandsRaw
+      .split(',')
+      .map((operand) => operand.trim())
+      .filter(Boolean);
 
     const recordError = (message: string) => {
       diagnostics.push({
@@ -138,8 +209,8 @@ export const simulateProgram = (code: string): SimulationResult => {
           return;
         }
 
-        const destination = parseOperand(operands[0]);
-        const source = parseOperand(operands[1]);
+        const source = parseOperand(operands[0]);
+        const destination = parseOperand(operands[1]);
 
         if (!destination || destination.type !== 'register') {
           recordError('El destino de mov debe ser un registro');
@@ -149,8 +220,17 @@ export const simulateProgram = (code: string): SimulationResult => {
           recordError('No se reconoce el operando de origen');
           return;
         }
+        if (source.type === 'memory') {
+          recordError('Operaciones de memoria aún no están soportadas');
+          return;
+        }
 
         const value = getOperandValue(state, source);
+        if (value === null) {
+          recordError('Operando de origen inválido');
+          return;
+        }
+
         setRegister(state, destination.register, value);
         if (destination.register === 'ESP') {
           state.stack = [];
@@ -165,8 +245,8 @@ export const simulateProgram = (code: string): SimulationResult => {
           return;
         }
 
-        const destination = parseOperand(operands[0]);
-        const source = parseOperand(operands[1]);
+        const source = parseOperand(operands[0]);
+        const destination = parseOperand(operands[1]);
 
         if (!destination || destination.type !== 'register') {
           recordError('El destino debe ser un registro');
@@ -176,9 +256,17 @@ export const simulateProgram = (code: string): SimulationResult => {
           recordError('No se reconoce el operando de origen');
           return;
         }
+        if (source.type === 'memory') {
+          recordError('Operaciones de memoria aún no están soportadas');
+          return;
+        }
 
         const currentValue = state.registers[destination.register];
         const operandValue = getOperandValue(state, source);
+        if (operandValue === null) {
+          recordError('Operando de origen inválido');
+          return;
+        }
         const result = mnemonic === 'add' ? currentValue + operandValue : currentValue - operandValue;
         setRegister(state, destination.register, result);
         updateArithmeticFlags(state, result);
@@ -195,7 +283,15 @@ export const simulateProgram = (code: string): SimulationResult => {
           recordError('Operando inválido para push');
           return;
         }
+        if (operand.type === 'memory') {
+          recordError('Operaciones de memoria aún no están soportadas');
+          return;
+        }
         const value = getOperandValue(state, operand);
+        if (value === null) {
+          recordError('Operando inválido para push');
+          return;
+        }
         const newEsp = state.registers.ESP - 4;
         setRegister(state, 'ESP', newEsp);
         state.stack = [value, ...state.stack];
@@ -242,6 +338,7 @@ export const simulateProgram = (code: string): SimulationResult => {
     state: cloneState(state),
     diagnostics,
     log,
+    analysis: analysis.lines,
   };
 };
 

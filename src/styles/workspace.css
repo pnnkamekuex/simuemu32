@@ -29,7 +29,7 @@
 
 .content {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 320px 320px;
   grid-template-rows: minmax(320px, auto) minmax(220px, auto);
   gap: 1.5rem;
   padding: 1.5rem;
@@ -78,6 +78,11 @@
   grid-row: 2;
 }
 
+.variablesArea {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+
 .stackList {
   display: flex;
   flex-direction: column;
@@ -87,7 +92,9 @@
   padding-right: 0.5rem;
 }
 
-.stackItem {
+.stackItemButton {
+  width: 100%;
+  text-align: left;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -96,6 +103,14 @@
   background: rgba(30, 41, 59, 0.9);
   border: 1px solid rgba(59, 130, 246, 0.2);
   font-size: 0.9rem;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.12s ease, border 0.12s ease;
+}
+
+.stackItemButton:hover {
+  transform: translateY(-2px);
+  border-color: rgba(96, 165, 250, 0.6);
 }
 
 .diagnosticsList {
@@ -193,6 +208,39 @@
   letter-spacing: 0.03em;
 }
 
+.editorContainer {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: stretch;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.lineNumbers {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-right: none;
+  background: rgba(15, 23, 42, 0.7);
+  color: rgba(226, 232, 240, 0.5);
+  font-family: 'Source Code Pro', 'Fira Code', monospace;
+  font-size: 0.9rem;
+  text-align: right;
+  user-select: none;
+  white-space: pre;
+  min-width: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.editorTextarea {
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  font-family: 'Source Code Pro', 'Fira Code', monospace;
+  padding-left: 0.75rem;
+}
+
 .projectForm {
   display: flex;
   flex-direction: column;
@@ -277,7 +325,8 @@
   gap: 0.75rem;
 }
 
-.registerCard {
+.registerCardButton {
+  text-align: left;
   background: rgba(30, 41, 59, 0.9);
   border: 1px solid rgba(59, 130, 246, 0.25);
   border-radius: 8px;
@@ -286,6 +335,14 @@
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.85rem;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.12s ease, border 0.12s ease;
+}
+
+.registerCardButton:hover {
+  transform: translateY(-2px);
+  border-color: rgba(147, 197, 253, 0.65);
 }
 
 .registerName {
@@ -300,6 +357,148 @@
   font-size: 0.85rem;
 }
 
+.variablesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.variableCard {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 10px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.variableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.variableName {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.variableDirective {
+  font-size: 0.75rem;
+  color: rgba(125, 211, 252, 0.9);
+}
+
+.variableValues {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.variableValueButton {
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(15, 23, 42, 0.6);
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.12s ease, border 0.12s ease;
+  font-size: 0.8rem;
+}
+
+.variableValueButton:hover {
+  transform: translateY(-2px);
+  border-color: rgba(191, 219, 254, 0.8);
+}
+
+.valueInspectorOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.5rem;
+}
+
+.valueInspectorContent {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(147, 197, 253, 0.4);
+  border-radius: 16px;
+  max-width: 520px;
+  width: 100%;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.5);
+}
+
+.valueInspectorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.valueInspectorHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.valueInspectorHeader p {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.valueInspectorClose {
+  border: none;
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.valueInspectorGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.valueInspectorLabel {
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(148, 163, 184, 0.8);
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.valueInspectorAscii {
+  letter-spacing: 0.1em;
+}
+
+.valueInspectorBinary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.valueInspectorBinary code {
+  background: rgba(30, 41, 59, 0.9);
+  border-radius: 8px;
+  padding: 0.75rem;
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
 @media (max-width: 1200px) {
   .workspace {
     grid-template-columns: 100%;
@@ -312,7 +511,7 @@
 
   .content {
     grid-template-columns: 100%;
-    grid-template-rows: repeat(3, auto);
+    grid-template-rows: repeat(4, auto);
   }
 
   .editorArea {
@@ -320,7 +519,24 @@
   }
 
   .stackArea,
-  .registerArea {
+  .registerArea,
+  .variablesArea {
     grid-column: 1;
+  }
+
+  .stackArea {
+    grid-row: 2;
+  }
+
+  .registerArea {
+    grid-row: 3;
+  }
+
+  .variablesArea {
+    grid-row: 4;
+  }
+
+  .valueInspectorContent {
+    max-width: 100%;
   }
 }

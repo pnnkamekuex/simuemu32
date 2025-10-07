@@ -3,9 +3,10 @@ import { formatRegisterValue } from '../features/simulator/asmSimulator';
 interface StackPanelProps {
   stack: number[];
   stackPointer: number;
+  onInspect: (label: string, value: number, address?: number) => void;
 }
 
-export const StackPanel = ({ stack, stackPointer }: StackPanelProps) => {
+export const StackPanel = ({ stack, stackPointer, onInspect }: StackPanelProps) => {
   return (
     <div className="panel">
       <header>
@@ -17,10 +18,15 @@ export const StackPanel = ({ stack, stackPointer }: StackPanelProps) => {
         {stack.map((value, index) => {
           const address = stackPointer + index * 4;
           return (
-            <div key={index} className="stackItem">
+            <button
+              key={index}
+              type="button"
+              className="stackItemButton"
+              onClick={() => onInspect(`pila[${index}]`, value, address)}
+            >
               <span>{formatRegisterValue(address)}</span>
               <strong>{formatRegisterValue(value)}</strong>
-            </div>
+            </button>
           );
         })}
       </div>

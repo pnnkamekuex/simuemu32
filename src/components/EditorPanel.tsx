@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 interface EditorPanelProps {
   code: string;
   onChange: (value: string) => void;
@@ -6,6 +8,11 @@ interface EditorPanelProps {
 }
 
 export const EditorPanel = ({ code, onChange, onRun, disabled = false }: EditorPanelProps) => {
+  const lineNumbers = useMemo(() => {
+    const totalLines = code.split(/\r?\n/).length || 1;
+    return Array.from({ length: totalLines }, (_, index) => index + 1).join('\n');
+  }, [code]);
+
   return (
     <div className="panel">
       <header>
@@ -14,13 +21,18 @@ export const EditorPanel = ({ code, onChange, onRun, disabled = false }: EditorP
           Ejecutar programa
         </button>
       </header>
-      <textarea
-        className="textarea"
-        value={code}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder="Escribe aquí tus instrucciones..."
-        spellCheck={false}
-      />
+      <div className="editorContainer">
+        <pre className="lineNumbers" aria-hidden="true">
+          {lineNumbers}
+        </pre>
+        <textarea
+          className="textarea editorTextarea"
+          value={code}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder="Escribe aquí tus instrucciones..."
+          spellCheck={false}
+        />
+      </div>
     </div>
   );
 };
