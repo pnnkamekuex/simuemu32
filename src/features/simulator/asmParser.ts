@@ -137,9 +137,8 @@ const createOperand = (
   parsed,
 });
 
-const splitOperands = (text: string): { tokens: string[]; errors: string[] } => {
+const splitOperands = (text: string): string[] => {
   const result: string[] = [];
-  const errors: string[] = [];
   let buffer = '';
   let depth = 0;
 
@@ -152,10 +151,6 @@ const splitOperands = (text: string): { tokens: string[]; errors: string[] } => 
       depth = Math.max(0, depth - 1);
       buffer += char;
     } else if (char === ',' && depth === 0) {
-      const nextChar = text[i + 1];
-      if (nextChar !== ' ') {
-        errors.push('Debe haber un espacio después de la coma entre operandos');
-      }
       if (buffer.trim()) {
         result.push(buffer.trim());
       }
@@ -169,7 +164,7 @@ const splitOperands = (text: string): { tokens: string[]; errors: string[] } => 
     result.push(buffer.trim());
   }
 
-  return { tokens: result, errors };
+  return result;
 };
 
 const parseImmediate = (raw: string): ParsedOperand | { error: string } => {
@@ -549,14 +544,12 @@ const normalizeLabelUsage = (mnemonic: string, operands: ParsedOperand[]): Parse
   });
 };
 
-const parseOperands = (
-  operandsText: string,
-): { results: (ParsedOperand | { error: string })[]; errors: string[] } => {
+const parseOperands = (operandsText: string): (ParsedOperand | { error: string })[] => {
   if (!operandsText.trim()) {
-    return { results: [], errors: [] };
+    return [];
   }
-  const { tokens, errors } = splitOperands(operandsText);
-  const results = tokens.map((operandText) => {
+  const rawOperands = splitOperands(operandsText);
+  return rawOperands.map((operandText) => {
     if (operandText.startsWith('$')) {
       return parseImmediate(operandText);
     }
@@ -578,7 +571,6 @@ const parseOperands = (
     const { operand, error } = parseMemoryOperand(operandText);
     return operand ?? { error: error ?? 'Operando inválido' };
   });
-  return { results, errors };
 };
 
 const buildInstructionLine = (context: ParseContext, mnemonic: string, operands: ParsedOperand[], prefixes: string[] = []): ParsedLine => {
@@ -637,7 +629,7 @@ const parseDirectiveOperands = (operandsText: string): { operands: ParsedOperand
     return { operands: [], raw: [], errors };
   }
 
-  const { tokens, errors: spacingErrors } = splitOperands(operandsText);
+  const tokens = splitOperands(operandsText);
   const operands: ParsedOperand[] = tokens.map((token) => {
     const trimmed = token.trim();
     if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
@@ -654,7 +646,7 @@ const parseDirectiveOperands = (operandsText: string): { operands: ParsedOperand
     return createOperand('mem', trimmed, 'desconocido', {});
   });
 
-  return { operands, raw: tokens, errors: [...spacingErrors, ...errors] };
+  return { operands, raw: tokens, errors };
 };
 
 const parseDirective = (context: ParseContext, directive: string, rest: string): ParsedLine => {
@@ -665,9 +657,9 @@ const parseDirective = (context: ParseContext, directive: string, rest: string):
 };
 
 const parseInstruction = (context: ParseContext, mnemonic: string, rest: string, prefixes: string[] = []): ParsedLine => {
-  const { results: operandResults, errors: spacingErrors } = parseOperands(rest);
+  const operandResults = parseOperands(rest);
   const parsedOperands: ParsedOperand[] = [];
-  const errors: string[] = [...spacingErrors];
+  const errors: string[] = [];
 
   operandResults.forEach((result) => {
     if ('error' in result) {

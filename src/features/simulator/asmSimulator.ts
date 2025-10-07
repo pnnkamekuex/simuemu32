@@ -12,38 +12,6 @@ const REGISTER_NAMES: RegisterName[] = ['EAX', 'EBX', 'ECX', 'EDX', 'ESI', 'EDI'
 const stripPrefix = (value: string, prefix: string) =>
   value.startsWith(prefix) ? value.slice(prefix.length) : value;
 
-const SIZE_SUFFIXES = new Set(['b', 'w', 'l']);
-
-const DIRECTIVES = new Set([
-  '.text',
-  '.data',
-  '.bss',
-  '.rodata',
-  '.byte',
-  '.word',
-  '.int',
-  '.quad',
-  '.ascii',
-  '.asciiz',
-  '.string',
-  '.space',
-  '.global',
-]);
-
-const normalizeMnemonic = (mnemonic: string) => {
-  const lowered = mnemonic.toLowerCase();
-  if (lowered.startsWith('.')) {
-    return lowered;
-  }
-  if (lowered.length > 1) {
-    const suffix = lowered[lowered.length - 1];
-    if (SIZE_SUFFIXES.has(suffix)) {
-      return lowered.slice(0, -1);
-    }
-  }
-  return lowered;
-};
-
 const createInitialState = (): CpuState => ({
   registers: REGISTER_NAMES.reduce(
     (acc, register) => ({
@@ -173,14 +141,7 @@ export const simulateProgram = (code: string): SimulationResult => {
     }
 
     const [mnemonicRaw, operandsRaw = ''] = instructionBody.split(/\s+/, 2);
-    const loweredMnemonic = mnemonicRaw.toLowerCase();
-    if (DIRECTIVES.has(loweredMnemonic)) {
-      return;
-    }
-    const mnemonic = normalizeMnemonic(mnemonicRaw);
-    if (DIRECTIVES.has(mnemonic)) {
-      return;
-    }
+    const mnemonic = mnemonicRaw.toLowerCase();
     const operands = operandsRaw
       .split(',')
       .map((operand) => operand.trim())
