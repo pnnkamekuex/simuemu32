@@ -208,6 +208,39 @@
   letter-spacing: 0.03em;
 }
 
+.editorContainer {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: stretch;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.lineNumbers {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-right: none;
+  background: rgba(15, 23, 42, 0.7);
+  color: rgba(226, 232, 240, 0.5);
+  font-family: 'Source Code Pro', 'Fira Code', monospace;
+  font-size: 0.9rem;
+  text-align: right;
+  user-select: none;
+  white-space: pre;
+  min-width: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.editorTextarea {
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  font-family: 'Source Code Pro', 'Fira Code', monospace;
+  padding-left: 0.75rem;
+}
+
 .projectForm {
   display: flex;
   flex-direction: column;
