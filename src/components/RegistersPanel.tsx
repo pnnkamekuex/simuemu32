@@ -3,11 +3,12 @@ import { formatRegisterValue } from '../features/simulator/asmSimulator';
 
 interface RegistersPanelProps {
   state: CpuState;
+  onInspect: (label: string, value: number, address?: number) => void;
 }
 
 const registerOrder: RegisterName[] = ['EAX', 'EBX', 'ECX', 'EDX', 'ESI', 'EDI', 'EBP', 'ESP'];
 
-export const RegistersPanel = ({ state }: RegistersPanelProps) => {
+export const RegistersPanel = ({ state, onInspect }: RegistersPanelProps) => {
   return (
     <div className="panel">
       <header>
@@ -15,10 +16,15 @@ export const RegistersPanel = ({ state }: RegistersPanelProps) => {
       </header>
       <div className="registerGrid">
         {registerOrder.map((register) => (
-          <div key={register} className="registerCard">
+          <button
+            key={register}
+            type="button"
+            className="registerCardButton"
+            onClick={() => onInspect(`%${register}`, state.registers[register])}
+          >
             <span className="registerName">{register}</span>
             <span>{formatRegisterValue(state.registers[register])}</span>
-          </div>
+          </button>
         ))}
       </div>
       <div className="flags">

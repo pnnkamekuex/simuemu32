@@ -7,12 +7,22 @@ import { EditorPanel } from './EditorPanel';
 import { StackPanel } from './StackPanel';
 import { RegistersPanel } from './RegistersPanel';
 import { DiagnosticsPanel } from './DiagnosticsPanel';
+import { VariablesPanel } from './VariablesPanel';
+import { ValueInspector } from './ValueInspector';
 import '../styles/workspace.css';
 
 export const Workspace = () => {
   const { currentProject, updateProjectCode } = useProjectContext();
   const [code, setCode] = useState('');
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
+  const [inspectedValue, setInspectedValue] = useState<
+    | {
+        label: string;
+        value: number;
+        address?: number;
+      }
+    | null
+  >(null);
 
   useEffect(() => {
     if (currentProject) {
@@ -27,6 +37,7 @@ export const Workspace = () => {
   const cpuState = useMemo(() => simulationResult?.state ?? getInitialCpuState(), [simulationResult]);
   const diagnostics = simulationResult?.diagnostics ?? [];
   const logs = simulationResult?.log ?? [];
+  const analysis = simulationResult?.analysis;
 
   const handleCodeChange = (value: string) => {
     setCode(value);
@@ -43,6 +54,12 @@ export const Workspace = () => {
     setSimulationResult(result);
   };
 
+  const handleInspect = (label: string, value: number, address?: number) => {
+    setInspectedValue({ label, value, address });
+  };
+
+  const closeInspector = () => setInspectedValue(null);
+
   return (
     <div className="workspace">
       <aside className="sidebar">
@@ -58,12 +75,23 @@ export const Workspace = () => {
           <DiagnosticsPanel diagnostics={diagnostics} logs={logs} />
         </div>
         <div className="stackArea">
-          <StackPanel stack={cpuState.stack} stackPointer={cpuState.registers.ESP} />
+          <StackPanel stack={cpuState.stack} stackPointer={cpuState.registers.ESP} onInspect={handleInspect} />
         </div>
         <div className="registerArea">
-          <RegistersPanel state={cpuState} />
+          <RegistersPanel state={cpuState} onInspect={handleInspect} />
+        </div>
+        <div className="variablesArea">
+          <VariablesPanel analysis={analysis} onInspect={handleInspect} />
         </div>
       </main>
+      {inspectedValue && (
+        <ValueInspector
+          label={inspectedValue.label}
+          value={inspectedValue.value}
+          address={inspectedValue.address}
+          onClose={closeInspector}
+        />
+      )}
     </div>
   );
 };
