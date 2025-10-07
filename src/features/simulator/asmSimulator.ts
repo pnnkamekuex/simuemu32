@@ -5,6 +5,7 @@ import type {
   SimulationLogEntry,
   SimulationResult,
 } from '../../types';
+import { analyzeAssembly } from './asmParser';
 
 const REGISTER_NAMES: RegisterName[] = ['EAX', 'EBX', 'ECX', 'EDX', 'ESI', 'EDI', 'EBP', 'ESP'];
 
@@ -88,6 +89,18 @@ export const simulateProgram = (code: string): SimulationResult => {
   const state = createInitialState();
   const diagnostics: Diagnostic[] = [];
   const log: SimulationLogEntry[] = [];
+
+  const analysis = analyzeAssembly(code);
+
+  analysis.lines.forEach((line) => {
+    line.errors.forEach((message) => {
+      diagnostics.push({
+        line: line.line,
+        message,
+        severity: 'error',
+      });
+    });
+  });
 
   const lines = code.split(/\r?\n/);
 
@@ -242,6 +255,7 @@ export const simulateProgram = (code: string): SimulationResult => {
     state: cloneState(state),
     diagnostics,
     log,
+    analysis: analysis.lines,
   };
 };
 

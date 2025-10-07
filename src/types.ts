@@ -44,4 +44,61 @@ export interface SimulationResult {
   state: CpuState;
   diagnostics: Diagnostic[];
   log: SimulationLogEntry[];
+  analysis?: ParsedLine[];
+}
+
+export type OperandKind = 'imm' | 'reg' | 'mem' | 'label';
+
+export type OperandAddressMode =
+  | 'inmediato'
+  | 'registro'
+  | 'directo'
+  | 'indirecto'
+  | 'base+desp'
+  | 'base+indice'
+  | 'base+indice+desp'
+  | 'indice-escalado'
+  | 'mixto'
+  | 'relativo'
+  | 'desconocido';
+
+export type InstructionSize = 'b' | 'w' | 'l' | 'inferido';
+
+export type InstructionCategory =
+  | 'data'
+  | 'arith'
+  | 'logic'
+  | 'shift'
+  | 'verify'
+  | 'setcc'
+  | 'branch'
+  | 'cmov'
+  | 'string'
+  | 'stack'
+  | 'misc'
+  | 'directive'
+  | 'label';
+
+export interface ParsedOperand {
+  kind: OperandKind;
+  text: string;
+  addrMode: OperandAddressMode;
+  parsed: Record<string, unknown>;
+}
+
+export interface ParsedLine {
+  line: number;
+  label?: string;
+  mnemonic: string;
+  size: InstructionSize;
+  category: InstructionCategory;
+  operands: ParsedOperand[];
+  addrMode: string;
+  flags: { writes: string[]; reads: string[] };
+  errors: string[];
+  prefixes?: string[];
+}
+
+export interface AssemblyAnalysisResult {
+  lines: ParsedLine[];
 }
