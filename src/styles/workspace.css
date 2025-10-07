@@ -1,0 +1,326 @@
+.workspace {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  width: 100%;
+  min-height: 100vh;
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.sidebar {
+  background: rgba(30, 41, 59, 0.8);
+  border-right: 1px solid rgba(148, 163, 184, 0.15);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sidebar h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  letter-spacing: 0.08em;
+}
+
+.sidebar p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 0.95rem;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-rows: minmax(320px, auto) minmax(220px, auto);
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.editorArea {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  grid-column: 1 / span 1;
+  grid-row: 1 / span 2;
+}
+
+.panel {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.35);
+}
+
+.panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.panelTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+.stackArea {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.registerArea {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.stackList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.stackItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  font-size: 0.9rem;
+}
+
+.diagnosticsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.diagnosticItem {
+  background: rgba(190, 24, 93, 0.15);
+  border-left: 3px solid rgba(244, 63, 94, 0.8);
+  padding: 0.75rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.diagnosticWarning {
+  background: rgba(234, 179, 8, 0.15);
+  border-left: 3px solid rgba(234, 179, 8, 0.8);
+}
+
+.logList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.logEntry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.logEntry:last-of-type {
+  border-bottom: none;
+}
+
+.buttonPrimary {
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.buttonPrimary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.buttonPrimary:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.35);
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inputGroup label {
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.6);
+  color: inherit;
+}
+
+.textarea {
+  min-height: 280px;
+  resize: vertical;
+  line-height: 1.4;
+  letter-spacing: 0.03em;
+}
+
+.projectForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.templateInfo {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.templateInfo li {
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.templateActive {
+  background: rgba(59, 130, 246, 0.12);
+  color: rgba(191, 219, 254, 0.95);
+}
+
+.recentProjects {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.projectList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.projectButton {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: transform 0.15s ease, border 0.15s ease, background 0.15s ease;
+}
+
+.projectButton:hover {
+  transform: translateX(4px);
+  border-color: rgba(59, 130, 246, 0.35);
+  background: rgba(30, 41, 59, 0.75);
+}
+
+.projectButtonActive {
+  border-color: rgba(147, 197, 253, 0.8);
+  background: rgba(37, 99, 235, 0.25);
+}
+
+.projectName {
+  font-weight: 600;
+}
+
+.projectMeta {
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.registerGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.registerCard {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.registerName {
+  font-weight: 600;
+  color: rgba(96, 165, 250, 0.95);
+}
+
+.flags {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 1200px) {
+  .workspace {
+    grid-template-columns: 100%;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  }
+
+  .content {
+    grid-template-columns: 100%;
+    grid-template-rows: repeat(3, auto);
+  }
+
+  .editorArea {
+    grid-row: 1;
+  }
+
+  .stackArea,
+  .registerArea {
+    grid-column: 1;
+  }
+}
